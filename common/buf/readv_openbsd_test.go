@@ -737,13 +737,30 @@ func TestOpenBSDSeqReaderInitClearLifecycle(t *testing.T) {
 	}
 
 	r.Clear()
-	if len(r.bs) != 0 {
-		t.Fatalf("expected bs len=0 after Clear, got %d", len(r.bs))
+	if r.bs != nil {
+		t.Fatalf("expected bs=nil after Clear, got len=%d cap=%d", len(r.bs), cap(r.bs))
 	}
 
 	r.Init([]*Buffer{b1})
 	if len(r.bs) != 1 {
 		t.Fatalf("expected bs len=1 after re-Init, got %d", len(r.bs))
+	}
+}
+
+// TestOpenBSDSeqReaderClearDropsReferences ensures Clear releases the slice
+// reference so stale buffer pointers are not retained between read rounds.
+func TestOpenBSDSeqReaderClearDropsReferences(t *testing.T) {
+	r := &openbsdSeqReader{}
+	b1 := New()
+	b2 := New()
+	defer b1.Release()
+	defer b2.Release()
+
+	r.Init([]*Buffer{b1, b2})
+	r.Clear()
+
+	if r.bs != nil {
+		t.Fatalf("expected bs=nil after Clear, got len=%d cap=%d", len(r.bs), cap(r.bs))
 	}
 }
 

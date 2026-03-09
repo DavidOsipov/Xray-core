@@ -334,11 +334,10 @@ func TestReadvReaderRawConnError(t *testing.T) {
 	}
 	ReleaseMulti(mb)
 
-	// Expire the deadline before the next read so rawConn.Read fails.
-	if err := client.SetDeadline(time.Now().Add(50 * time.Millisecond)); err != nil {
+	// Set an already-expired read deadline so rawConn.Read fails immediately.
+	if err := client.SetReadDeadline(time.Now().Add(-1 * time.Second)); err != nil {
 		t.Fatal(err)
 	}
-	time.Sleep(60 * time.Millisecond)
 
 	mb, err = reader.ReadMultiBuffer()
 	if mb != nil {

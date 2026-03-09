@@ -80,8 +80,8 @@ func (r *openbsdSeqReader) Read(fd uintptr) int32 {
 }
 
 func (r *openbsdSeqReader) Clear() {
-	// Match other reader implementations: drop length, keep backing array for reuse.
-	r.bs = r.bs[:0]
+	// Drop references eagerly so pooled buffers are not retained past this read.
+	r.bs = nil
 }
 
 func newMultiReader() multiReader {
